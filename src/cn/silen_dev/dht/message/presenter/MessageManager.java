@@ -5,6 +5,8 @@ import cn.silen_dev.dht.bittorrent.bencode.*;
 import cn.silen_dev.dht.main.Main;
 import cn.silen_dev.dht.main.MainConst;
 import cn.silen_dev.dht.message.model.FindNodeMessage;
+import cn.silen_dev.dht.message.model.FindNodeResponse;
+import cn.silen_dev.dht.message.model.GetPeerResponse;
 import cn.silen_dev.dht.message.model.PingResponse;
 import cn.silen_dev.dht.queue.NodeList;
 import cn.silen_dev.dht.socket.server.DHTSocketServer;
@@ -73,9 +75,10 @@ public class MessageManager {
                 System.out.println(Bencode.parseBencode(new ByteArrayInputStream(packet.getData(), 0, packet.getLength())));
                 String r = ((BencodeMap)o).get(new BencodeString("q")).toString();
                 BencodeMap a = (BencodeMap)((BencodeMap)o).get(new BencodeString("a"));
+                BencodeString rid = (BencodeString)a.get(new BencodeString("id"));
+                String t= ((BencodeMap)o).get(new BencodeString("t")).toString();
                 if (r.equals("ping")){
-                    BencodeString rid = (BencodeString)a.get(new BencodeString("id"));
-                    String t= ((BencodeMap)o).get(new BencodeString("t")).toString();
+
                     PingResponse response=new PingResponse(t,rid);
                     socketServer.seedPacket((InetSocketAddress) packet.getSocketAddress(),response);
                     System.out.println("收到Ping:"+((InetSocketAddress) packet.getSocketAddress()).getHostName());
@@ -83,6 +86,12 @@ public class MessageManager {
                 if (r.equals("get_peers")){
                     BencodeString infoHash=(BencodeString)a.get(new BencodeString("info_hash"));
                     System.out.println("收到Peers："+infoHash.toString());
+                    GetPeerResponse getPeerResponse=new GetPeerResponse(t,rid);
+                    socketServer.seedPacket((InetSocketAddress) packet.getSocketAddress(),getPeerResponse);
+                }
+                if (r.equals("find_node")){
+                    FindNodeResponse findNodeResponse=new FindNodeResponse(t,rid);
+                    socketServer.seedPacket((InetSocketAddress) packet.getSocketAddress(),findNodeResponse);
                 }
             }
         } catch (IOException e) {

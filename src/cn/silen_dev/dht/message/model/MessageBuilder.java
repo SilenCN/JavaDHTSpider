@@ -15,8 +15,8 @@ public class MessageBuilder {
         map.put(new BencodeString("y"),new BencodeString(type));
         return this;
     }
-    public MessageBuilder builderT(String id){
-        map.put(new BencodeString(MessageType.TRANSACTION),new BencodeString(id));
+    public MessageBuilder builderT(String t){
+        map.put(new BencodeString(MessageType.TRANSACTION),new BencodeString(t));
         return this;
     }
     public MessageBuilder builderQuery(String query_type){
