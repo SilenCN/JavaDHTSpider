@@ -5,6 +5,8 @@ import cn.silen_dev.dht.message.model.FindNodeMessage;
 import cn.silen_dev.dht.message.model.PingMessage;
 import cn.silen_dev.dht.message.presenter.MessageManager;
 import cn.silen_dev.dht.queue.NodeList;
+import cn.silen_dev.dht.queue.PacketQueue;
+import cn.silen_dev.dht.socket.cache.UDPSendCache;
 import cn.silen_dev.dht.socket.server.DHTSocketServer;
 import sun.rmi.runtime.Log;
 
@@ -66,56 +68,61 @@ public class Main {
     private static final List<InetSocketAddress> BOOTSTRAP_NODES = new ArrayList<>(Arrays.asList(
             new InetSocketAddress("router.bittorrent.com", 6881),
             new InetSocketAddress("router.utorrent.com", 6881),
-            new InetSocketAddress("dht.transmissionbt.com",6881)
+            new InetSocketAddress("dht.transmissionbt.com", 6881)
     ));
 
     public static void main(String[] args) throws Exception {
 
         String myId = SHA1("SILEN").substring(0, 20);
-        MainConst.MY_ID=myId;
+        MainConst.MY_ID = myId;
         String target = SHA1("TEST").substring(0, 20);
-        MainConst.FIND_NODE_ID=target;
+        MainConst.FIND_NODE_ID = target;
         System.out.println(myId);
         FindNodeMessage findNodeMessage = new FindNodeMessage(myId, target);
         PingMessage pingMessage = new PingMessage(myId);
         DHTSocketServer socketServer = new DHTSocketServer();
-        NodeList nodeList=new NodeList();
-        MessageManager messageManager=new MessageManager(socketServer,nodeList);
+        NodeList nodeList = new NodeList();
+        UDPSendCache udpSendCache = new UDPSendCache(socketServer);
+        MessageManager messageManager = new MessageManager(udpSendCache, nodeList);
+
+        PacketQueue packetQueue = new PacketQueue(messageManager);
+    //    udpSendCache.start();
+     //   packetQueue.start();
         socketServer.start();
         socketServer.setOnServerMessageListener(packet -> {
             try {
-                messageManager.messageParse(packet);
+                System.out.println("接受");
+                packetQueue.addPacket(packet);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             // recvPacket(packet);
         });
-        Timer timer=new Timer();
+
+        udpSendCache.addSendMessage(BOOTSTRAP_NODES.get(0), pingMessage);
+/*      Timer timer=new Timer();
         TimerTask timerTask=new TimerTask() {
             @Override
             public void run() {
                 System.out.println("定时");
                 for (InetSocketAddress inetSocketAddress:nodeList.getAll()){
-
-                    socketServer.seedPacket(inetSocketAddress, pingMessage);
-                    socketServer.seedPacket(inetSocketAddress, findNodeMessage);
+                    udpSendCache.addSendMessage(inetSocketAddress,pingMessage);
+                    udpSendCache.addSendMessage(inetSocketAddress,findNodeMessage);
                 }
             }
-        };
+        };*/
 
         for (InetSocketAddress address : BOOTSTRAP_NODES) {
-            socketServer.seedPacket(address, findNodeMessage);
-            socketServer.seedPacket(address, pingMessage);
+            udpSendCache.addSendMessage(address, pingMessage);
+            udpSendCache.addSendMessage(address, findNodeMessage);
         }
-        timer.schedule(timerTask,5000,5000);
-
+        //   timer.schedule(timerTask,5000,5000);
     }
 
     public final static String SHA1(String decript) {
         try {
-            MessageDigest digest = java.security.MessageDigest
-                    .getInstance("SHA-1");
+            MessageDigest digest = java.security.MessageDigest.getInstance("SHA-1");
             digest.update(decript.getBytes());
             byte messageDigest[] = digest.digest();
             // Create Hex String

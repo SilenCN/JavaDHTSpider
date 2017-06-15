@@ -45,6 +45,7 @@ public class DHTSocketServer extends Thread {
     }
 
     public void seedPacket(InetSocketAddress address, MessageBuilder messageBuilder) {
+        System.out.println("发送");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             messageBuilder.toMap().write(out);
