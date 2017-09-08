@@ -16,7 +16,7 @@ public class FindNodeMessage extends MessageBuilder {
         builderType(MessageType.QUERY);
         BencodeMap map = new BencodeMap();
         map.put(new BencodeString("id"), new BencodeString(myId));
-        map.put(new BencodeString("target"), new BencodeString(SHA1((int)(Math.random()*100000)+"").substring(0, 20)));
+        map.put(new BencodeString("target"), new BencodeString(myId));
         builderArgs(map);
     }
 }

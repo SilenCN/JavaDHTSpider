@@ -49,8 +49,6 @@ public class UDPSendCache extends Thread {
             */
     }
 
-
-
     public void addSendMessage(UDPSendMessage message) {
         System.out.println("UDP添加");
         sendMessageQueue.add(message);
@@ -60,5 +58,6 @@ public class UDPSendCache extends Thread {
     public void addSendMessage(InetSocketAddress address, MessageBuilder builder) {
       //  addSendMessage(new UDPSendMessage(builder, address));
         socket.seedPacket(address, builder);
+        System.out.println("UDP发送");
     }
 }

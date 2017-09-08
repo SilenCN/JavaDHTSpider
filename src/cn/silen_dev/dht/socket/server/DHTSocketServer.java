@@ -10,7 +10,7 @@ import java.net.*;
  * Created by silen on 17-5-12.
  */
 public class DHTSocketServer extends Thread {
-    private static final int SERVER_PORT = 12761;
+    private static final int SERVER_PORT = 6881;
     private static final int PACKET_LEN = 10 * 1024;
     private OnServerMessageListener onServerMessageListener;
     private DatagramSocket socket;

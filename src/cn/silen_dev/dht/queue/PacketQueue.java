@@ -1,57 +1,63 @@
 package cn.silen_dev.dht.queue;
 
+import cn.silen_dev.dht.cache.CacheQueue;
 import cn.silen_dev.dht.message.presenter.MessageManager;
+
 import java.net.DatagramPacket;
-import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * Created by silen on 17-5-15.
  */
 public class PacketQueue extends Thread {
-    private static Object monitor = new Object();
-    Queue<DatagramPacket> packetQueue;
+    CacheQueue<DatagramPacket> packetQueue;
     MessageManager messageManager;
     private OnPacketPresenterListener onPacketPresenterListener;
 
     public PacketQueue(MessageManager messageManager) {
         super();
-        packetQueue = new LinkedList<>();
+        packetQueue = new CacheQueue<>();
         this.messageManager = messageManager;
     }
 
+
     @Override
-    public void start() {
-        super.start();
+    public void run() {
+
+        DatagramPacket packet;
+        System.out.println("Packet运行");
 
         while (true) {
-          //  synchronized (monitor) {
-                //System.out.println("Packet运行");
-                DatagramPacket packet = packetQueue.poll();
-                if (null != packet) {
+          /*  try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }*/
+           packet = packetQueue.poll();
+
+            if (null != packet) {
+                try {
                     messageManager.messageParse(packet);
-                    System.out.println("Packet运行");
-                /*if (null!=onPacketPresenterListener){
-                    onPacketPresenterListener.on(packet);
-                }*/
-                } /*else {
-                    try {
-                        sleep(40);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }*/
-           // }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+           }
+
         }
     }
 
     public void addPacket(DatagramPacket packet) {
+        messageManager.messageParse(packet);
      //   packetQueue.add(packet);
      //   System.out.println("Packet运行1");
-        if (null != packet) {
-            messageManager.messageParse(packet);
-            System.out.println("Packet运行");
-        }
+/*        synchronized (packetQueue) {
+            if (null != packet) {
+                messageManager.messageParse(packet);
+                System.out.println("Packet添加");
+                packetQueue.notify();
+            }
+
+        }*/
     }
 
     public void setOnPacketPresenterListener(OnPacketPresenterListener onPacketPresenterListener) {
@@ -61,4 +67,5 @@ public class PacketQueue extends Thread {
     public interface OnPacketPresenterListener {
         void on(DatagramPacket packet);
     }
+
 }

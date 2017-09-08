@@ -1,6 +1,5 @@
 package cn.silen_dev.dht.main;
 
-import cn.silen_dev.dht.bittorrent.bencode.*;
 import cn.silen_dev.dht.message.model.FindNodeMessage;
 import cn.silen_dev.dht.message.model.PingMessage;
 import cn.silen_dev.dht.message.presenter.MessageManager;
@@ -8,10 +7,7 @@ import cn.silen_dev.dht.queue.NodeList;
 import cn.silen_dev.dht.queue.PacketQueue;
 import cn.silen_dev.dht.socket.cache.UDPSendCache;
 import cn.silen_dev.dht.socket.server.DHTSocketServer;
-import sun.rmi.runtime.Log;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -87,7 +83,7 @@ public class Main {
 
         PacketQueue packetQueue = new PacketQueue(messageManager);
     //    udpSendCache.start();
-     //   packetQueue.start();
+        packetQueue.start();
         socketServer.start();
         socketServer.setOnServerMessageListener(packet -> {
             try {
